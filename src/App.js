@@ -1,17 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Auth } from "aws-amplify";
 import { Link } from "react-router-dom";
 import { LinkContainer } from "react-router-bootstrap";
 import { Nav, Navbar, NavItem } from "react-bootstrap";
 import Routes from "./Routes";
 import "./App.css";
 
-var isAuthenticated = false
-var userHasAuthenticated = false
 
-function App(props)
- {
-  [isAuthenticated, userHasAuthenticated] = useState(false);
+function App(props) {
+  const [isAuthenticated, userHasAuthenticated] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
+
+  useEffect(() => {
+    onLoad();
+  }, []);
+
+  async function onLoad() {
+    try {
+      await Auth.currentSession();
+      userHasAuthenticated(true);
+    }
+    catch(e) {
+      if (e !== 'No current user') {
+        alert(e);
+      }
+    }
+
+    setIsAuthenticating(false);
+  }
+
   return (
+    !isAuthenticating &&
     <div className="App container">
       <Navbar fluid collapseOnSelect>
         <Navbar.Header>
@@ -39,10 +58,10 @@ function App(props)
       <Routes appProps={{ isAuthenticated, userHasAuthenticated }} />
     </div>
   );
-}
 
-function handleLogout() {
-  userHasAuthenticated(false);
+  function handleLogout() {
+    userHasAuthenticated(false);
+  }
 }
 
 export default App;
